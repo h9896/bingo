@@ -27,7 +27,7 @@ func StartSubscribe[T WsClient](client T, cfg WsConfig) (cleanup func(), err err
 			select {
 			case <-quit:
 				return
-			case <-time.After(50 * time.Millisecond):
+			case <-time.After(25 * time.Millisecond):
 				_, message, err := conn.ReadMessage()
 				if err != nil {
 					client.ErrHandler(err)
