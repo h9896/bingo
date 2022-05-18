@@ -73,3 +73,60 @@ Use StartSubscribe function to get message.
 	// End subscription and clean up related connections
 	cleanup()
 ```
+
+### Http
+
+Create a http client
+
+```go
+client := rpc.NewHttpClient(apikey, true, nil)
+```
+
+General Request
+
+```go
+req := client.GetHttpRequest(
+	rpc.SetEndpoint("dapi.binance.com/dapi/v1/depth"),
+	rpc.SetMethod("get"),
+	rpc.SetParams(&rpc.HttpParameter{Key: "symbol", Val: "BTCUSD_PERP"},
+		&rpc.HttpParameter{Key: "limit", Val: "5"}),
+)
+
+resp, err := client1.ExecuteHttpOperation(ctx, req)
+```
+
+Private Request
+
+```go
+req := client.GetHttpRequest(
+	rpc.SetEndpoint("dapi.binance.com/dapi/v1/account"),
+	rpc.SetMethod("get"),
+	rpc.SetPrivate(),
+	rpc.SetTimestamp(),
+	rpc.SetSignature(secret),
+	)
+
+resp, err := client.ExecuteHttpOperation(ctx, req)
+```
+
+Private Request by POST
+
+```go
+body := []*rpc.HttpParameter{
+	{Key: "symbol", Val: "BTCUSD_PERP"},
+	{Key: "side", Val: "BUY"},
+	{Key: "recvWindow", Val: "600000"},
+	{Key: "type", Val: "LIMIT"},
+	{Key: "timeInForce", Val: "GTC"},
+	{Key: "quantity", Val: "0.0035"},
+	{Key: "price", Val: "28000.1"}}
+
+req := client.GetHttpRequest(rpc.SetEndpoint("dapi.binance.com/dapi/v1/order"),
+	rpc.SetPrivate(),
+	rpc.SetMethod("post"),
+	rpc.SetParams(body...),
+	rpc.SetTimestamp(),
+	rpc.SetSignature(secret))
+
+resp, err := client.ExecuteHttpOperation(ctx, req)
+```

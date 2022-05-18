@@ -20,7 +20,7 @@ func StartSubscribe[T WsClient](client T, cfg WsConfig) (cleanup func(), err err
 		},
 	)
 
-	quit := make(chan bool, 1)
+	quit := make(chan struct{})
 	cleanup = clean(quit, nil, conn)
 	go func() {
 		for {
@@ -45,7 +45,7 @@ func StartSubscribe[T WsClient](client T, cfg WsConfig) (cleanup func(), err err
 	return
 }
 
-func clean(quit chan bool, streams []string, conn *websocket.Conn) func() {
+func clean(quit chan struct{}, streams []string, conn *websocket.Conn) func() {
 	if streams == nil {
 		return func() {
 			defer close(quit)
