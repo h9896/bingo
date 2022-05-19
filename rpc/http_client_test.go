@@ -51,7 +51,7 @@ func TestRequestOption(t *testing.T) {
 }
 
 func TestGetHttpRequest(t *testing.T) {
-	client := NewHttpClient("apikey", true, nil)
+	client := NewGenericHttpClient("apikey", true, nil)
 	query := []*HttpParameter{
 		{Key: "symbol", Val: "BTCUSD_PERP"},
 		{Key: "limit", Val: "5"}}
@@ -72,7 +72,7 @@ func TestGetHttpRequest(t *testing.T) {
 
 type mockHttpClient struct{}
 
-func mockClient() httpClient {
+func mockClient() HTTPClient {
 	return &mockHttpClient{}
 }
 func (c *mockHttpClient) Do(req *http.Request) (resp *http.Response, error error) {
@@ -81,7 +81,7 @@ func (c *mockHttpClient) Do(req *http.Request) (resp *http.Response, error error
 }
 
 func TestExecuteHttpOperationWithSignature(t *testing.T) {
-	client := NewHttpClient("apikey", false, mockClient())
+	client := NewGenericHttpClient("apikey", false, mockClient())
 
 	body := []*HttpParameter{
 		{Key: "symbol", Val: "BTCUSD_PERP"},
@@ -105,13 +105,12 @@ func TestExecuteHttpOperationWithSignature(t *testing.T) {
 }
 
 func TestExecuteHttpOperation(t *testing.T) {
-	client := NewHttpClient("apikey", false, mockClient())
+	client := NewGenericHttpClient("apikey", false, mockClient())
 	req := client.GetHttpRequest(SetEndpoint("dapi.binance.com/dapi/v1"),
 		SetPrivate(),
 		SetMethod("get"))
 	resp, _ := client.ExecuteHttpOperation(context.Background(), req)
 
-	assert.EqualValues(t, req.header, resp.Request.Header)
 	assert.EqualValues(t, req.method, resp.Request.Method)
 	assert.EqualValues(t, req.fullURL, resp.Request.URL.String())
 }

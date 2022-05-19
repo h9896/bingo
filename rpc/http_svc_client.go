@@ -6,14 +6,14 @@ import (
 	"net/http"
 )
 
-type httpSvcClient struct {
-	client   httpClient
+type GenericHttpSvcClient struct {
+	client   HTTPClient
 	protocol string
 	apiKey   string
 }
 
-func NewHttpClient(apiKey string, useSSL bool, c httpClient) HttpClient {
-	client := &httpSvcClient{
+func NewGenericHttpClient(apiKey string, useSSL bool, c HTTPClient) GenericHttpClient {
+	client := &GenericHttpSvcClient{
 		apiKey: apiKey,
 	}
 
@@ -33,7 +33,7 @@ func NewHttpClient(apiKey string, useSSL bool, c httpClient) HttpClient {
 }
 
 // Execute a http request
-func (c *httpSvcClient) ExecuteHttpOperation(ctx context.Context, request *reqMsg) (*http.Response, error) {
+func (c *GenericHttpSvcClient) ExecuteHttpOperation(ctx context.Context, request *reqMsg) (*http.Response, error) {
 
 	if request.private {
 		SetHeader(&HttpParameter{Key: "X-MBX-APIKEY", Val: c.apiKey})(request)
@@ -78,7 +78,7 @@ func (c *httpSvcClient) ExecuteHttpOperation(ctx context.Context, request *reqMs
 }
 
 // Create a http request
-func (c *httpSvcClient) GetHttpRequest(opts ...RequestOption) *reqMsg {
+func (c *GenericHttpSvcClient) GetHttpRequest(opts ...RequestOption) *reqMsg {
 	req := &reqMsg{
 		private: false,
 	}
