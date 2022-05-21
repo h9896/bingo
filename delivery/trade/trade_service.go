@@ -275,62 +275,62 @@ func (s *deliveryTradeService) ModifyOrder(ctx context.Context, request *pb.Modi
 	return out, nil
 }
 
-// Place Multiple Orders
-func (s *deliveryTradeService) PlaceMultipleOrders(ctx context.Context, request *pb.PlaceMultipleOrdersRequest) (*pb.PlaceMultipleOrdersResponse, error) {
-	endpoint := fmt.Sprintf("%s/%s", s.domain, delivery.EntryPointMultipleOrders)
-	batch := ""
-	for _, val := range request.GetBatchOrders() {
-		subBody, err := s.m.Marshal(val)
-		if err != nil {
-			return nil, err
-		}
-		if batch != "" {
-			batch += fmt.Sprintf(",%s", string(subBody[:]))
-		} else {
-			batch += string(subBody[:])
-		}
-	}
-	body := []*rpc.HttpParameter{
-		{Key: "batchOrders", Val: fmt.Sprintf("[%s]", batch)},
-	}
-
-	if request.GetRecvWindow() != 0 {
-		body = append(body, &rpc.HttpParameter{Key: "recvWindow", Val: fmt.Sprintf("%v", request.GetRecvWindow())})
-	}
-
-	req := s.httpclient.GetHttpRequest(rpc.SetEndpoint(endpoint), rpc.SetMethod("POST"),
-		rpc.SetParams(body...), rpc.SetPrivate(), rpc.SetTimestamp(), rpc.SetSignature(s.secret))
-
-	resp, err := s.httpclient.ExecuteHttpOperation(ctx, req)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Something wrong")
-	}
-
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	fmt.Println(string(respBody[:]))
-	fmt.Println(req)
-	out := &pb.PlaceMultipleOrdersResponse{}
-
-	batchOrders := &[]*pb.NewOrderResponse{}
-
-	err = s.m.Unmarshal(respBody, batchOrders)
-
-	if err != nil {
-		return nil, err
-	}
-
-	out.BatchOrders = *batchOrders
-
-	return out, nil
-}
+// // Place Multiple Orders
+// func (s *deliveryTradeService) PlaceMultipleOrders(ctx context.Context, request *pb.PlaceMultipleOrdersRequest) (*pb.PlaceMultipleOrdersResponse, error) {
+// 	endpoint := fmt.Sprintf("%s/%s", s.domain, delivery.EntryPointMultipleOrders)
+// 	batch := ""
+// 	for _, val := range request.GetBatchOrders() {
+// 		subBody, err := s.m.Marshal(val)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		if batch != "" {
+// 			batch += fmt.Sprintf(",%s", string(subBody[:]))
+// 		} else {
+// 			batch += string(subBody[:])
+// 		}
+// 	}
+// 	body := []*rpc.HttpParameter{
+// 		{Key: "batchOrders", Val: fmt.Sprintf("[%s]", batch)},
+// 	}
+//
+// 	if request.GetRecvWindow() != 0 {
+// 		body = append(body, &rpc.HttpParameter{Key: "recvWindow", Val: fmt.Sprintf("%v", request.GetRecvWindow())})
+// 	}
+//
+// 	req := s.httpclient.GetHttpRequest(rpc.SetEndpoint(endpoint), rpc.SetMethod("POST"),
+// 		rpc.SetParams(body...), rpc.SetPrivate(), rpc.SetTimestamp(), rpc.SetSignature(s.secret))
+//
+// 	resp, err := s.httpclient.ExecuteHttpOperation(ctx, req)
+//
+// 	if err != nil {
+// 		return nil, err
+// 	}
+//
+// 	if resp.StatusCode != 200 {
+// 		return nil, fmt.Errorf("Something wrong")
+// 	}
+//
+// 	respBody, err := ioutil.ReadAll(resp.Body)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	fmt.Println(string(respBody[:]))
+// 	fmt.Println(req)
+// 	out := &pb.PlaceMultipleOrdersResponse{}
+//
+// 	batchOrders := &[]*pb.NewOrderResponse{}
+//
+// 	err = s.m.Unmarshal(respBody, batchOrders)
+//
+// 	if err != nil {
+// 		return nil, err
+// 	}
+//
+// 	out.BatchOrders = *batchOrders
+//
+// 	return out, nil
+// }
 
 // // Modify Multiple Orders
 // func (s *deliveryTradeService) ModifyMultipleOrders(ctx context.Context, request *pb.ModifyMultipleOrdersRequest) (*pb.ModifyMultipleOrdersResponse, error) {
@@ -338,33 +338,33 @@ func (s *deliveryTradeService) PlaceMultipleOrders(ctx context.Context, request 
 // 	body := []*rpc.HttpParameter{
 // 		{Key: "batchOrders", Val: fmt.Sprintf("%v", request.GetBatchOrders())},
 // 	}
-
+//
 // 	if request.GetRecvWindow() != 0 {
 // 		body = append(body, &rpc.HttpParameter{Key: "recvWindow", Val: fmt.Sprintf("%v", request.GetRecvWindow())})
 // 	}
-
+//
 // 	req := s.httpclient.GetHttpRequest(rpc.SetEndpoint(endpoint), rpc.SetMethod("PUT"),
 // 		rpc.SetParams(body...), rpc.SetPrivate(), rpc.SetTimestamp(), rpc.SetSignature(s.secret))
-
+//
 // 	resp, err := s.httpclient.ExecuteHttpOperation(ctx, req)
-
+//
 // 	if err != nil {
 // 		return nil, err
 // 	}
-
+//
 // 	if resp.StatusCode != 200 {
 // 		return nil, fmt.Errorf("Something wrong")
 // 	}
-
+//
 // 	respBody, err := ioutil.ReadAll(resp.Body)
 // 	if err != nil {
 // 		return nil, err
 // 	}
-
+//
 // 	out := &pb.ModifyMultipleOrdersResponse{}
-
+//
 // 	err = s.m.Unmarshal(respBody, out.BatchOrders)
-
+//
 // 	if err != nil {
 // 		return nil, err
 // 	}

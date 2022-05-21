@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/gorilla/websocket v1.5.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.0
-	github.com/h9896/bingo-pkg-protobuf v0.0.0-20220521143708-7fe46e3a5e7c
+	github.com/h9896/bingo-pkg-protobuf v0.0.0-20220521165724-1cbf7faed4c7
 	github.com/stretchr/testify v1.7.1
 	google.golang.org/protobuf v1.28.0
 )
