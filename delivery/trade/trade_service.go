@@ -7,6 +7,7 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	pb "github.com/h9896/bingo-pkg-protobuf/services/delivery/v1"
+	"github.com/h9896/bingo/delivery"
 	"github.com/h9896/bingo/rpc"
 	"google.golang.org/protobuf/encoding/protojson"
 )
@@ -42,7 +43,7 @@ func NewDeliveryTradeService(domain, apikey, secret string, useSSL bool, client 
 
 // Change user's position mode (Hedge Mode or One-way Mode ) on EVERY symbol
 func (s *deliveryTradeService) ChangePositionMode(ctx context.Context, request *pb.ChangePositionModeRequest) (*pb.ChangePositionModeResponse, error) {
-	endpoint := fmt.Sprintf("%s/%s", s.domain, EntryPointPositionMode)
+	endpoint := fmt.Sprintf("%s/%s", s.domain, delivery.EntryPointPositionMode)
 	body := []*rpc.HttpParameter{
 		{Key: "dualSidePosition", Val: request.GetDualSidePosition()},
 	}
@@ -77,44 +78,9 @@ func (s *deliveryTradeService) ChangePositionMode(ctx context.Context, request *
 	return out, nil
 }
 
-// // Get user's position mode (Hedge Mode or One-way Mode ) on EVERY symbol
-// func (s *deliveryTradeService) GetPositionMode(ctx context.Context, request *pb.Empty) (*pb.GetPositionModeResponse, error) {
-// 	endpoint := fmt.Sprintf("%s/%s", s.domain, EntryPointPositionMode)
-
-// 	req := s.httpclient.GetHttpRequest(rpc.SetEndpoint(endpoint), rpc.SetMethod("get"),
-// 		rpc.SetPrivate(), rpc.SetTimestamp(), rpc.SetSignature(s.secret))
-
-// 	resp, err := s.httpclient.ExecuteHttpOperation(ctx, req)
-
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	if resp.StatusCode != 200 {
-// 		return nil, fmt.Errorf("Something wrong")
-// 	}
-
-// 	defer resp.Body.Close()
-
-// 	respBody, err := ioutil.ReadAll(resp.Body)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	out := &pb.GetPositionModeResponse{}
-
-// 	// err = s.m.Unmarshal(respBody, out)
-// 	err = json.Unmarshal(respBody, out)
-
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return out, nil
-// }
-
 // Send in a new order.
 func (s *deliveryTradeService) NewOrder(ctx context.Context, request *pb.NewOrderRequest) (*pb.NewOrderResponse, error) {
-	endpoint := fmt.Sprintf("%s/%s", s.domain, EntryPointOrder)
+	endpoint := fmt.Sprintf("%s/%s", s.domain, delivery.EntryPointOrder)
 	body := []*rpc.HttpParameter{
 		{Key: "symbol", Val: request.GetSymbol()},
 		{Key: "side", Val: request.GetSide().String()},
@@ -207,7 +173,7 @@ func (s *deliveryTradeService) NewOrder(ctx context.Context, request *pb.NewOrde
 
 // Cancel an active order.
 func (s *deliveryTradeService) CancelOrder(ctx context.Context, request *pb.CancelOrderRequest) (*pb.CancelOrderResponse, error) {
-	endpoint := fmt.Sprintf("%s/%s", s.domain, EntryPointOrder)
+	endpoint := fmt.Sprintf("%s/%s", s.domain, delivery.EntryPointOrder)
 	body := []*rpc.HttpParameter{
 		{Key: "symbol", Val: request.GetSymbol()},
 	}
@@ -255,7 +221,7 @@ func (s *deliveryTradeService) CancelOrder(ctx context.Context, request *pb.Canc
 // Order modify function, currently only LIMIT order modification is supported,
 // modified orders will be reordered in the match queue
 func (s *deliveryTradeService) ModifyOrder(ctx context.Context, request *pb.ModifyOrderRequest) (*pb.ModifyOrderResponse, error) {
-	endpoint := fmt.Sprintf("%s/%s", s.domain, EntryPointOrder)
+	endpoint := fmt.Sprintf("%s/%s", s.domain, delivery.EntryPointOrder)
 	body := []*rpc.HttpParameter{
 		{Key: "symbol", Val: request.GetSymbol()},
 		{Key: "side", Val: request.GetSide().String()},
@@ -311,7 +277,7 @@ func (s *deliveryTradeService) ModifyOrder(ctx context.Context, request *pb.Modi
 
 // Place Multiple Orders
 func (s *deliveryTradeService) PlaceMultipleOrders(ctx context.Context, request *pb.PlaceMultipleOrdersRequest) (*pb.PlaceMultipleOrdersResponse, error) {
-	endpoint := fmt.Sprintf("%s/%s", s.domain, EntryMultipleOrders)
+	endpoint := fmt.Sprintf("%s/%s", s.domain, delivery.EntryPointMultipleOrders)
 	batch := ""
 	for _, val := range request.GetBatchOrders() {
 		subBody, err := s.m.Marshal(val)
@@ -407,7 +373,7 @@ func (s *deliveryTradeService) PlaceMultipleOrders(ctx context.Context, request 
 
 // Cancel All Open Orders
 func (s *deliveryTradeService) CancelAllOpenOrders(ctx context.Context, request *pb.CancelAllOpenOrdersRequest) (*pb.CancelAllOpenOrdersResponse, error) {
-	endpoint := fmt.Sprintf("%s/%s", s.domain, EntryAllOpenOrders)
+	endpoint := fmt.Sprintf("%s/%s", s.domain, delivery.EntryPointAllOpenOrders)
 	body := []*rpc.HttpParameter{
 		{Key: "symbol", Val: request.GetSymbol()},
 	}
@@ -446,7 +412,7 @@ func (s *deliveryTradeService) CancelAllOpenOrders(ctx context.Context, request 
 
 // Cancel all open orders of the specified symbol at the end of the specified countdown
 func (s *deliveryTradeService) AutoCancelAllOpenOrder(ctx context.Context, request *pb.AutoCancelAllOpenOrdersRequest) (*pb.AutoCancelAllOpenOrdersResponse, error) {
-	endpoint := fmt.Sprintf("%s/%s", s.domain, EntryCountdownCancelAll)
+	endpoint := fmt.Sprintf("%s/%s", s.domain, delivery.EntryPointCountdownCancelAll)
 	body := []*rpc.HttpParameter{
 		{Key: "symbol", Val: request.GetSymbol()},
 		{Key: "countdownTime", Val: fmt.Sprintf("%v", request.GetCountdownTime())},
@@ -488,7 +454,7 @@ func (s *deliveryTradeService) AutoCancelAllOpenOrder(ctx context.Context, reque
 // For Hedge Mode, LONG and SHORT positions of one symbol use
 // the same initial leverage and share a total notional value.
 func (s *deliveryTradeService) ChangeInitialLeverage(ctx context.Context, request *pb.ChangeInitialLeverageRequest) (*pb.ChangeInitialLeverageResponse, error) {
-	endpoint := fmt.Sprintf("%s/%s", s.domain, EntryLeverage)
+	endpoint := fmt.Sprintf("%s/%s", s.domain, delivery.EntryPointLeverage)
 	body := []*rpc.HttpParameter{
 		{Key: "symbol", Val: request.GetSymbol()},
 		{Key: "leverage", Val: fmt.Sprintf("%v", request.GetLeverage())},
@@ -532,7 +498,7 @@ func (s *deliveryTradeService) ChangeInitialLeverage(ctx context.Context, reques
 // With ISOLATED margin type, margins of
 // the LONG and SHORT positions are isolated from each other.
 func (s *deliveryTradeService) ChangeMarginType(ctx context.Context, request *pb.ChangeMarginTypeRequest) (*pb.ChangeMarginTypeResponse, error) {
-	endpoint := fmt.Sprintf("%s/%s", s.domain, EntryMarginType)
+	endpoint := fmt.Sprintf("%s/%s", s.domain, delivery.EntryPointMarginType)
 	body := []*rpc.HttpParameter{
 		{Key: "symbol", Val: request.GetSymbol()},
 		{Key: "marginType", Val: request.GetMarginType().String()},
@@ -572,7 +538,7 @@ func (s *deliveryTradeService) ChangeMarginType(ctx context.Context, request *pb
 
 // Modify Isolated Position Margin
 func (s *deliveryTradeService) ModifyIsolatedPositionMargin(ctx context.Context, request *pb.ModifyIsolatedPositionMarginRequest) (*pb.ModifyIsolatedPositionMarginResponse, error) {
-	endpoint := fmt.Sprintf("%s/%s", s.domain, EntryPositionMargin)
+	endpoint := fmt.Sprintf("%s/%s", s.domain, delivery.EntryPointPositionMargin)
 	body := []*rpc.HttpParameter{
 		{Key: "symbol", Val: request.GetSymbol()},
 		{Key: "amount", Val: fmt.Sprintf("%v", request.GetAmount())},
@@ -608,65 +574,6 @@ func (s *deliveryTradeService) ModifyIsolatedPositionMargin(ctx context.Context,
 	out := &pb.ModifyIsolatedPositionMarginResponse{}
 
 	err = s.m.Unmarshal(respBody, out)
-
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// Get Position Margin Change History
-func (s *deliveryTradeService) GetPositionMarginChangeHistory(ctx context.Context, request *pb.GetPositionMarginChangeHistoryRequest) (*pb.GetPositionMarginChangeHistoryResponse, error) {
-	endpoint := fmt.Sprintf("%s/%s/%s", s.domain, EntryPositionMargin, History)
-	body := []*rpc.HttpParameter{
-		{Key: "symbol", Val: request.GetSymbol()},
-	}
-
-	if request.GetRecvWindow() != 0 {
-		body = append(body, &rpc.HttpParameter{Key: "recvWindow", Val: fmt.Sprintf("%v", request.GetRecvWindow())})
-	}
-
-	if request.GetType() != 0 {
-		body = append(body, &rpc.HttpParameter{Key: "type", Val: fmt.Sprintf("%v", request.GetType())})
-	}
-
-	if request.GetStartTime() != 0 {
-		body = append(body, &rpc.HttpParameter{Key: "startTime", Val: fmt.Sprintf("%v", request.GetStartTime())})
-	}
-
-	if request.GetEndTime() != 0 {
-		body = append(body, &rpc.HttpParameter{Key: "endTime", Val: fmt.Sprintf("%v", request.GetEndTime())})
-	}
-
-	if request.GetLimit() != 0 {
-		body = append(body, &rpc.HttpParameter{Key: "limit", Val: fmt.Sprintf("%v", request.GetLimit())})
-	}
-
-	req := s.httpclient.GetHttpRequest(rpc.SetEndpoint(endpoint), rpc.SetMethod("GET"),
-		rpc.SetParams(body...), rpc.SetPrivate(), rpc.SetTimestamp(), rpc.SetSignature(s.secret))
-
-	resp, err := s.httpclient.ExecuteHttpOperation(ctx, req)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Something wrong")
-	}
-
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	out := &pb.GetPositionMarginChangeHistoryResponse{}
-
-	listPositionMargin := &[]*pb.PositionMargin{}
-
-	err = s.m.Unmarshal(respBody, listPositionMargin)
-
-	out.PositionMarginChangeHistory = *listPositionMargin
 
 	if err != nil {
 		return nil, err
