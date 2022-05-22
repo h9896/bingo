@@ -328,6 +328,10 @@ func (s *deliveryUserDataService) AllOrders(ctx context.Context, request *pb.All
 		body = append(body, &rpc.HttpParameter{Key: "endTime", Val: fmt.Sprintf("%v", request.GetEndTime())})
 	}
 
+	if request.GetLimit() != 0 {
+		body = append(body, &rpc.HttpParameter{Key: "limit", Val: fmt.Sprintf("%v", request.GetLimit())})
+	}
+
 	if request.GetRecvWindow() != 0 {
 		body = append(body, &rpc.HttpParameter{Key: "recvWindow", Val: fmt.Sprintf("%v", request.GetRecvWindow())})
 	}
@@ -394,12 +398,15 @@ func (s *deliveryUserDataService) FuturesAccountBalance(ctx context.Context, req
 
 	out := &pb.FuturesAccountBalanceResponse{}
 
-	err = s.m.Unmarshal(respBody, out)
+	balances := []*pb.Balance{}
+
+	err = s.m.Unmarshal(respBody, &balances)
 
 	if err != nil {
 		return nil, err
 	}
 
+	out.FuturesAccountBalance = balances
 	return out, nil
 }
 
@@ -444,15 +451,15 @@ func (s *deliveryUserDataService) PositionInformation(ctx context.Context, reque
 
 	out := &pb.PositionInformationResponse{}
 
-	positions := &[]*pb.Position{}
+	positions := []*pb.PositionString{}
 
-	err = s.m.Unmarshal(respBody, positions)
+	err = s.m.Unmarshal(respBody, &positions)
 
 	if err != nil {
 		return nil, err
 	}
 
-	out.Positions = *positions
+	out.Positions = positions
 
 	return out, nil
 }
@@ -710,15 +717,15 @@ func (s *deliveryUserDataService) NotionalBracketForSymbol(ctx context.Context, 
 
 	out := &pb.NotionalBracketForSymbolResponse{}
 
-	brackets := &[]*pb.NotionalBracketForSymbol{}
+	brackets := []*pb.NotionalBracketForSymbol{}
 
-	err = s.m.Unmarshal(respBody, brackets)
-
-	out.Brackets = *brackets
+	err = s.m.Unmarshal(respBody, &brackets)
 
 	if err != nil {
 		return nil, err
 	}
+	out.Brackets = brackets
+
 	return out, nil
 }
 

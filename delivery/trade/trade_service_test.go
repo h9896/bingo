@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"testing"
 
 	pb "github.com/h9896/bingo-pkg-protobuf/services/delivery/v1"
@@ -14,28 +13,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	timestampKey = "timestamp"
-	signatureKey = "signature"
-	mockDomain   = "mock"
-	mockApiKey   = "apikey"
-	mockSecret   = "secret"
-)
-
 func getMockDeliveryTradeService() pb.DeliveryTradeServiceServer {
-	return NewDeliveryTradeService(mockDomain, mockApiKey, mockSecret, true, &mocks.MockHTTPClient{})
+	return NewDeliveryTradeService(mocks.MockDomain, mocks.MockApiKey, mocks.MockSecret, true, &mocks.MockHTTPClient{})
 }
-func checkTimestampAndSignature(t *testing.T, params url.Values) {
-	_, timeOk := params[timestampKey]
-	_, signOk := params[signatureKey]
-	assert.True(t, timeOk, "timestamp not found")
-	assert.True(t, signOk, "signature not found")
-}
-func checkHeader(t *testing.T, headers http.Header) {
-	val, ok := headers["X-Mbx-Apikey"]
-	assert.True(t, ok, "apikey header not found")
-	assert.Contains(t, val, mockApiKey)
-}
+
 func TestChangePositionMode(t *testing.T) {
 	service := getMockDeliveryTradeService()
 	request := &pb.ChangePositionModeRequest{
@@ -45,11 +26,11 @@ func TestChangePositionMode(t *testing.T) {
 
 	mocks.GetDoFunc = func(req *http.Request) (resp *http.Response, err error) {
 		assert.EqualValues(t, http.MethodPost, req.Method)
-		checkHeader(t, req.Header)
-		assert.EqualValues(t, mockDomain, req.URL.Host)
+		mocks.CheckHeader(t, req.Header)
+		assert.EqualValues(t, mocks.MockDomain, req.URL.Host)
 		assert.EqualValues(t, "/dapi/v1/positionSide/dual", req.URL.Path)
 		params := req.URL.Query()
-		checkTimestampAndSignature(t, params)
+		mocks.CheckTimestampAndSignature(t, params)
 		assert.Contains(t, params["dualSidePosition"], request.GetDualSidePosition())
 		assert.Contains(t, params["recvWindow"], fmt.Sprintf("%v", request.GetRecvWindow()))
 		data := `{
@@ -88,11 +69,11 @@ func TestNewOrder(t *testing.T) {
 
 	mocks.GetDoFunc = func(req *http.Request) (resp *http.Response, err error) {
 		assert.EqualValues(t, http.MethodPost, req.Method)
-		checkHeader(t, req.Header)
-		assert.EqualValues(t, mockDomain, req.URL.Host)
+		mocks.CheckHeader(t, req.Header)
+		assert.EqualValues(t, mocks.MockDomain, req.URL.Host)
 		assert.EqualValues(t, "/dapi/v1/order", req.URL.Path)
 		params := req.URL.Query()
-		checkTimestampAndSignature(t, params)
+		mocks.CheckTimestampAndSignature(t, params)
 		assert.Contains(t, params["symbol"], request.GetSymbol())
 		assert.Contains(t, params["side"], request.GetSide().String())
 		assert.Contains(t, params["type"], request.GetType().String())
@@ -151,11 +132,11 @@ func TestCancelOrder(t *testing.T) {
 
 	mocks.GetDoFunc = func(req *http.Request) (resp *http.Response, err error) {
 		assert.EqualValues(t, http.MethodDelete, req.Method)
-		checkHeader(t, req.Header)
-		assert.EqualValues(t, mockDomain, req.URL.Host)
+		mocks.CheckHeader(t, req.Header)
+		assert.EqualValues(t, mocks.MockDomain, req.URL.Host)
 		assert.EqualValues(t, "/dapi/v1/order", req.URL.Path)
 		params := req.URL.Query()
-		checkTimestampAndSignature(t, params)
+		mocks.CheckTimestampAndSignature(t, params)
 		assert.Contains(t, params["symbol"], request.GetSymbol())
 		assert.Contains(t, params["origClientOrderId"], request.GetOrigClientOrderId())
 		assert.Contains(t, params["orderId"], fmt.Sprintf("%v", request.GetOrderId()))
@@ -209,11 +190,11 @@ func TestModifyOrder(t *testing.T) {
 
 	mocks.GetDoFunc = func(req *http.Request) (resp *http.Response, err error) {
 		assert.EqualValues(t, http.MethodPut, req.Method)
-		checkHeader(t, req.Header)
-		assert.EqualValues(t, mockDomain, req.URL.Host)
+		mocks.CheckHeader(t, req.Header)
+		assert.EqualValues(t, mocks.MockDomain, req.URL.Host)
 		assert.EqualValues(t, "/dapi/v1/order", req.URL.Path)
 		params := req.URL.Query()
-		checkTimestampAndSignature(t, params)
+		mocks.CheckTimestampAndSignature(t, params)
 		assert.Contains(t, params["symbol"], request.GetSymbol())
 		assert.Contains(t, params["side"], request.GetSide().String())
 		assert.Contains(t, params["origClientOrderId"], request.GetOrigClientOrderId())
@@ -266,11 +247,11 @@ func TestCancelAllOpenOrders(t *testing.T) {
 
 	mocks.GetDoFunc = func(req *http.Request) (resp *http.Response, err error) {
 		assert.EqualValues(t, http.MethodDelete, req.Method)
-		checkHeader(t, req.Header)
-		assert.EqualValues(t, mockDomain, req.URL.Host)
+		mocks.CheckHeader(t, req.Header)
+		assert.EqualValues(t, mocks.MockDomain, req.URL.Host)
 		assert.EqualValues(t, "/dapi/v1/allOpenOrders", req.URL.Path)
 		params := req.URL.Query()
-		checkTimestampAndSignature(t, params)
+		mocks.CheckTimestampAndSignature(t, params)
 		assert.Contains(t, params["symbol"], request.GetSymbol())
 		assert.Contains(t, params["recvWindow"], fmt.Sprintf("%v", request.GetRecvWindow()))
 		data := `{
@@ -295,11 +276,11 @@ func TestAutoCancelAllOpenOrder(t *testing.T) {
 
 	mocks.GetDoFunc = func(req *http.Request) (resp *http.Response, err error) {
 		assert.EqualValues(t, http.MethodPost, req.Method)
-		checkHeader(t, req.Header)
-		assert.EqualValues(t, mockDomain, req.URL.Host)
+		mocks.CheckHeader(t, req.Header)
+		assert.EqualValues(t, mocks.MockDomain, req.URL.Host)
 		assert.EqualValues(t, "/dapi/v1/countdownCancelAll", req.URL.Path)
 		params := req.URL.Query()
-		checkTimestampAndSignature(t, params)
+		mocks.CheckTimestampAndSignature(t, params)
 		assert.Contains(t, params["symbol"], request.GetSymbol())
 		assert.Contains(t, params["countdownTime"], fmt.Sprintf("%v", request.GetCountdownTime()))
 		assert.Contains(t, params["recvWindow"], fmt.Sprintf("%v", request.GetRecvWindow()))
@@ -325,11 +306,11 @@ func TestChangeInitialLeverage(t *testing.T) {
 
 	mocks.GetDoFunc = func(req *http.Request) (resp *http.Response, err error) {
 		assert.EqualValues(t, http.MethodPost, req.Method)
-		checkHeader(t, req.Header)
-		assert.EqualValues(t, mockDomain, req.URL.Host)
+		mocks.CheckHeader(t, req.Header)
+		assert.EqualValues(t, mocks.MockDomain, req.URL.Host)
 		assert.EqualValues(t, "/dapi/v1/leverage", req.URL.Path)
 		params := req.URL.Query()
-		checkTimestampAndSignature(t, params)
+		mocks.CheckTimestampAndSignature(t, params)
 		assert.Contains(t, params["symbol"], request.GetSymbol())
 		assert.Contains(t, params["leverage"], fmt.Sprintf("%v", request.GetLeverage()))
 		assert.Contains(t, params["recvWindow"], fmt.Sprintf("%v", request.GetRecvWindow()))
@@ -357,11 +338,11 @@ func TestChangeMarginType(t *testing.T) {
 
 	mocks.GetDoFunc = func(req *http.Request) (resp *http.Response, err error) {
 		assert.EqualValues(t, http.MethodPost, req.Method)
-		checkHeader(t, req.Header)
-		assert.EqualValues(t, mockDomain, req.URL.Host)
+		mocks.CheckHeader(t, req.Header)
+		assert.EqualValues(t, mocks.MockDomain, req.URL.Host)
 		assert.EqualValues(t, "/dapi/v1/marginType", req.URL.Path)
 		params := req.URL.Query()
-		checkTimestampAndSignature(t, params)
+		mocks.CheckTimestampAndSignature(t, params)
 		assert.Contains(t, params["symbol"], request.GetSymbol())
 		assert.Contains(t, params["marginType"], request.GetMarginType().String())
 		assert.Contains(t, params["recvWindow"], fmt.Sprintf("%v", request.GetRecvWindow()))
@@ -389,11 +370,11 @@ func TestModifyIsolatedPositionMargin(t *testing.T) {
 
 	mocks.GetDoFunc = func(req *http.Request) (resp *http.Response, err error) {
 		assert.EqualValues(t, http.MethodPost, req.Method)
-		checkHeader(t, req.Header)
-		assert.EqualValues(t, mockDomain, req.URL.Host)
+		mocks.CheckHeader(t, req.Header)
+		assert.EqualValues(t, mocks.MockDomain, req.URL.Host)
 		assert.EqualValues(t, "/dapi/v1/positionMargin", req.URL.Path)
 		params := req.URL.Query()
-		checkTimestampAndSignature(t, params)
+		mocks.CheckTimestampAndSignature(t, params)
 		assert.Contains(t, params["symbol"], request.GetSymbol())
 		assert.Contains(t, params["positionSide"], request.GetPositionSide().String())
 		assert.Contains(t, params["amount"], fmt.Sprintf("%v", request.GetAmount()))
@@ -413,36 +394,4 @@ func TestModifyIsolatedPositionMargin(t *testing.T) {
 	assert.EqualValues(t, 1, resp.Type)
 	assert.EqualValues(t, 100.0, resp.Amount)
 	assert.EqualValues(t, "Successfully modify position margin.", resp.GetMsg())
-}
-
-func TestUseSSL(t *testing.T) {
-	s := NewDeliveryTradeService(mockDomain, mockApiKey, mockSecret, true, &mocks.MockHTTPClient{})
-	request := &pb.ChangePositionModeRequest{
-		DualSidePosition: "YES",
-		RecvWindow:       5000,
-	}
-
-	mocks.GetDoFunc = func(req *http.Request) (resp *http.Response, err error) {
-		assert.EqualValues(t, "https", req.URL.Scheme)
-		data := `{
-			"code": 200,
-			"msg": "success"
-		}`
-		resp = &http.Response{StatusCode: 200, Body: ioutil.NopCloser(bytes.NewBufferString(data))}
-		return
-	}
-	s.ChangePositionMode(context.Background(), request)
-
-	nots := NewDeliveryTradeService(mockDomain, mockApiKey, mockSecret, false, &mocks.MockHTTPClient{})
-
-	mocks.GetDoFunc = func(req *http.Request) (resp *http.Response, err error) {
-		assert.EqualValues(t, "http", req.URL.Scheme)
-		data := `{
-			"code": 200,
-			"msg": "success"
-		}`
-		resp = &http.Response{StatusCode: 200, Body: ioutil.NopCloser(bytes.NewBufferString(data))}
-		return
-	}
-	nots.ChangePositionMode(context.Background(), request)
 }
