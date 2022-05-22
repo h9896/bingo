@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/h9896/bingo/mocks"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -51,7 +52,7 @@ func TestRequestOption(t *testing.T) {
 }
 
 func TestGetHttpRequest(t *testing.T) {
-	client := NewHttpClient("apikey", true, nil)
+	client := NewGenericHttpClient("apikey", true, nil)
 	query := []*HttpParameter{
 		{Key: "symbol", Val: "BTCUSD_PERP"},
 		{Key: "limit", Val: "5"}}
@@ -70,18 +71,8 @@ func TestGetHttpRequest(t *testing.T) {
 
 }
 
-type mockHttpClient struct{}
-
-func mockClient() httpClient {
-	return &mockHttpClient{}
-}
-func (c *mockHttpClient) Do(req *http.Request) (resp *http.Response, error error) {
-	resp = &http.Response{Request: req}
-	return
-}
-
 func TestExecuteHttpOperationWithSignature(t *testing.T) {
-	client := NewHttpClient("apikey", false, mockClient())
+	client := NewGenericHttpClient("apikey", false, &mocks.MockHTTPClient{})
 
 	body := []*HttpParameter{
 		{Key: "symbol", Val: "BTCUSD_PERP"},
@@ -97,6 +88,10 @@ func TestExecuteHttpOperationWithSignature(t *testing.T) {
 		SetParams(body...),
 		SetTimestamp(),
 		SetSignature("secret"))
+	mocks.GetDoFunc = func(req *http.Request) (resp *http.Response, err error) {
+		resp = &http.Response{Request: req}
+		return
+	}
 	resp, _ := client.ExecuteHttpOperation(context.Background(), req)
 
 	assert.EqualValues(t, req.header, resp.Request.Header)
@@ -105,13 +100,16 @@ func TestExecuteHttpOperationWithSignature(t *testing.T) {
 }
 
 func TestExecuteHttpOperation(t *testing.T) {
-	client := NewHttpClient("apikey", false, mockClient())
+	client := NewGenericHttpClient("apikey", false, &mocks.MockHTTPClient{})
 	req := client.GetHttpRequest(SetEndpoint("dapi.binance.com/dapi/v1"),
 		SetPrivate(),
 		SetMethod("get"))
+	mocks.GetDoFunc = func(req *http.Request) (resp *http.Response, err error) {
+		resp = &http.Response{Request: req}
+		return
+	}
 	resp, _ := client.ExecuteHttpOperation(context.Background(), req)
 
-	assert.EqualValues(t, req.header, resp.Request.Header)
 	assert.EqualValues(t, req.method, resp.Request.Method)
 	assert.EqualValues(t, req.fullURL, resp.Request.URL.String())
 }

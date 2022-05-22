@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-type HttpClient interface {
+type GenericHttpClient interface {
 	// Execute a http request
 	ExecuteHttpOperation(ctx context.Context, request *reqMsg) (*http.Response, error)
 
@@ -13,6 +13,6 @@ type HttpClient interface {
 	GetHttpRequest(opts ...RequestOption) *reqMsg
 }
 
-type httpClient interface {
+type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }

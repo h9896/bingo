@@ -8,11 +8,15 @@
 
 A Golang API for [binance](https://www.binance.com) base on [Doc](https://binance-docs.github.io/apidocs/delivery/en/#change-log).
 
-|      Name      |                        Description                         |       Status       |
-| :------------: | :--------------------------------------------------------: | :----------------: |
-| Coin-M Futures | Perpetual or Quarterly Contracts settled in Cryptocurrency | Partical Implement |
-| USD-M Futures  |  Perpetual or Quarterly Contracts settled in USDT or BUSD  |        ToDo        |
-|  Spot/Margin   |                                                            |        ToDo        |
+|       Name        |                        Description                         |       Status       |
+| :---------------: | :--------------------------------------------------------: | :----------------: |
+|   General HTTP    |                   A General HTTP Client                    |        Done        |
+| General Websocket |                 A General Websocket Client                 |        Done        |
+|  Coin-M Futures   | Perpetual or Quarterly Contracts settled in Cryptocurrency | Partical Implement |
+|   USD-M Futures   |  Perpetual or Quarterly Contracts settled in USDT or BUSD  |        ToDo        |
+|    Spot/Margin    |                                                            |        ToDo        |
+
+The related repository [bingo-pkg-protobuf](https://github.com/h9896/bingo-pkg-protobuf)
 
 ## Example
 
